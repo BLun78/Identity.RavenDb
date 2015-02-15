@@ -9,26 +9,20 @@ using Raven.Client;
 namespace Blun.AspNet.Identity.RavenDb
 {
     //http://blogs.msdn.com/b/webdev/archive/2014/06/17/dependency-injection-in-asp-net-vnext.aspx
-    public static class IdentityRavenDbServices
+    internal static class IdentityRavenDbServices
     {
-        public static Func<IServiceProvider, object> GetUserStoreProvider(Type userStoreType)
-        {
-            
-        }
-
-
         public static IEnumerable<IServiceDescriptor> GetDefaultServices(Type userType = null,
-                                                                        Type roleType = null,
-                                                                        Type keyType = null,
-                                                                        IConfiguration config = null)
+                                                                           Type roleType = null,
+                                                                           Type keyType = null,
+                                                                           IConfiguration config = null)
         {
             Type userStoreType;
             Type roleStoreType;
 
-            var describe = config == null ? 
-                                    new ServiceDescriber() : 
+            var describe = config == null ?
+                                    new ServiceDescriber() :
                                     new ServiceDescriber(config);
-            
+
             if (userType == null && (keyType == null || keyType == typeof(string)))
             {
                 userType = typeof(IdentityUser);
@@ -45,8 +39,8 @@ namespace Blun.AspNet.Identity.RavenDb
             else if (roleType == null && keyType != null || keyType == typeof(int) || keyType == typeof(long))
             {
                 roleType = typeof(IdentityRole<>).MakeGenericType(keyType);
-            } 
-            
+            }
+
             if (keyType != null)
             {
                 //Generic
@@ -60,7 +54,7 @@ namespace Blun.AspNet.Identity.RavenDb
                 roleStoreType = typeof(RoleStore);
             }
 
-            yield return describe.Scoped(typeof(IUserStore<>).MakeGenericType(userType), IdentityRavenDbServices.GetUserStoreProvider(userStoreType));
+            yield return describe.Scoped(typeof(IUserStore<>).MakeGenericType(userType), userStoreType);
             yield return describe.Scoped(typeof(IRoleStore<>).MakeGenericType(roleType), roleStoreType);
         }
 

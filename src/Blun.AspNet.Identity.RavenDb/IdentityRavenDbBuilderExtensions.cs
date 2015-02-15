@@ -7,13 +7,21 @@ namespace Blun.AspNet.Identity.RavenDb
     {
         public static IdentityBuilder AddRavendbStores(this IdentityBuilder builder)
         {
-            builder.Services.Add(IdentityRavenDbServices.GetDefaultServices(builder.UserType, builder.RoleType, typeof(TContext)));
+            foreach (var item in IdentityRavenDbServices.GetStringBasedKeyServices(null))
+            {
+                builder.Services.Add(item);
+            }
+
             return builder;
         }
 
         public static IdentityBuilder AddRavendbStores<TKey>(this IdentityBuilder builder)
         {
-            builder.Services.Add(IdentityRavenDbServices.GetDefaultServices(builder.UserType, builder.RoleType, typeof(TContext)));
+            foreach (var item in IdentityRavenDbServices.GetDefaultServices(builder.UserType, builder.RoleType))
+            {
+                builder.Services.Add(item);
+            }
+            
             return builder;
         }
     }

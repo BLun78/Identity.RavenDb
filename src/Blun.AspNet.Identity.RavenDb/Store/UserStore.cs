@@ -198,7 +198,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
             }
             else
             {
-                ThrowTypeAccessException(typeof(TKey));
+                ThrowNotSupportedException(typeof(TKey));
             }
 
             return await this.Session.LoadAsync<TUser>(id, cancellationToken);
@@ -321,7 +321,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
             }
             else
             {
-                ThrowTypeAccessException(typeof(TKey));
+                ThrowNotSupportedException(typeof(TKey));
             }
 
             return await base.Session.LoadAsync<TUser>(userIdAsString, cancellationToken);
@@ -539,7 +539,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
             }
             else
             {
-                ThrowTypeAccessException(typeof(TKey));
+                ThrowNotSupportedException(typeof(TKey));
             }
             return await base.Session.LoadAsync<TUser>(id, cancellationToken);
         }

@@ -165,7 +165,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
             }
             else
             {
-                ThrowTypeAccessException(typeof(TKey));
+                ThrowNotSupportedException(typeof(TKey));
             }
 
             return await base.Session.LoadAsync<TRole>(id, cancellationToken);

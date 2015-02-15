@@ -11,7 +11,7 @@ Blun78
 * Microsoft .net Framework 4.6 (4.5.3) RC 
 * c# 6.0
 * Microsoft.AspNet.Identity in min Version 3.0
-* RavenDb 3.0
+* RavenDb.Client 3.0
 
 ## Features ##
 * Drop-in replacement ASP.NET Identity with RavenDB as the backing store.

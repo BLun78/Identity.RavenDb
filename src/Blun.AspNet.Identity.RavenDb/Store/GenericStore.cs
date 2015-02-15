@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Blun.AspNet.Identity.RavenDb.Common;
 using Microsoft.AspNet.Identity;
 using Raven.Client;
 using Raven.Client.Document.Async;
@@ -13,7 +13,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
     /// /the base for the <see cref="UserStore"/> and <see cref="Rolestore"/>
     /// </summary>
     /// <typeparam name="TKey">only <see cref="string"/> or <see cref="int"/></typeparam>
-    public abstract class GenericStore<TKey> : GenericBase<TKey>
+    public abstract class GenericStore<TKey> : IDisposable
         where TKey : IConvertible, IComparable, IEquatable<TKey>
     {
         #region Fields/Properties
@@ -37,12 +37,16 @@ namespace Blun.AspNet.Identity.RavenDb.Store
         #region CTOR
 
         /// <summary>
-        /// Better nev
+        /// Use it if you have an open session
         /// </summary>
         /// <param name="describer">use to set an own <see cref="IdentityErrorDescriber"/></param>
         private GenericStore(IdentityErrorDescriber describer)
-            : base()
         {
+            //check für Valid Key
+            if (!(CheckNumeric() || CheckString()))
+            {
+                ThrowNotSupportedException(typeof(TKey));
+            }
             //IDisposable
             HandleDisposable = Disposeable;
             //autosave
@@ -80,18 +84,100 @@ namespace Blun.AspNet.Identity.RavenDb.Store
         }
 
         #endregion
-
-        #region IDisposable
         
-        protected virtual void Disposeable()
-        {
-            _session.Dispose();
-        }
-
-        #endregion
-
         #region Methods/Functions
 
+        /// <summary>
+        /// throws an NotSupportedException 
+        /// </summary>
+        /// <param name="type"></param>
+        protected static void ThrowNotSupportedException(Type type)
+        {
+            throw new NotSupportedException("Only 'int','long' and 'string' are valid for RavenDB Key!",
+                                            new TypeAccessException(type.FullName));
+        }
+
+        /// <summary>
+        /// return true if 'TKey' is 'int' or 'long'
+        /// </summary>
+        protected static bool CheckNumeric()
+        {
+            return CheckInt() || CheckLong();
+        }
+
+        /// <summary>
+        /// return true if 'TKey' is 'int'
+        /// </summary>
+        protected static bool CheckInt()
+        {
+            return typeof(TKey) == typeof(int) || typeof(TKey) == typeof(Int32);
+        }
+
+        /// <summary>
+        /// return true if 'TKey' is 'long'
+        /// </summary>
+        protected static bool CheckLong()
+        {
+            return typeof(TKey) == typeof(long) || typeof(TKey) == typeof(Int64);
+        }
+
+        /// <summary>
+        /// return true if 'TKey' is 'string'
+        /// </summary>
+        protected static bool CheckString()
+        {
+            return typeof(TKey) == typeof(string) || typeof(TKey) == typeof(String);
+        }
+
+        /// <summary>
+        /// Check the argument only for null
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="argumentName"></param>
+        /// <param name="sourceMemberName"></param>
+        protected void CheckArgumentForOnlyNull(object input, string argumentName, [CallerMemberName]string sourceMemberName = "")
+        {
+            this.ThrowIfDisposed();
+            if (input == null)
+                throw new ArgumentNullException(argumentName, sourceMemberName);
+        }
+
+        /// <summary>
+        /// Check the argument for null, empty, whitespace
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="argumentName"></param>
+        /// <param name="sourceMemberName"></param>
+        protected void CheckArgumentForNull(object input, string argumentName, [CallerMemberName]string sourceMemberName = "")
+        {
+            this.ThrowIfDisposed();
+            if (input is string)
+            {
+                if (string.IsNullOrWhiteSpace(input as string))
+                    throw new ArgumentException("ValueCannotBeNullOrEmptyOrWhiteSpace - " + argumentName, sourceMemberName);
+            }
+            else if (input is int)
+            {
+                if (Convert.ToInt32(input) == default(int))
+                    throw new ArgumentNullException(argumentName, sourceMemberName);
+            }
+            else if (input is long)
+            {
+                if (Convert.ToInt64(input) == default(long))
+                    throw new ArgumentNullException(argumentName, sourceMemberName);
+            }
+            else
+            {
+                if (input == null)
+                    throw new ArgumentNullException(argumentName, sourceMemberName);
+            }
+        }
+        
+
+        /// <summary>
+        /// Default  void Task
+        /// </summary>
+        /// <returns></returns>
         protected Task<bool> VoidTask()
         {
             return Task.FromResult(false);
@@ -105,7 +191,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
         /// <returns></returns>
         protected string CreateId(string id, Type type)
         {
-            return CreateId(ConvertIdFromString(id), type);
+            return this.CreateId(ConvertIdFromString(id), type);
         }
 
         /// <summary>
@@ -129,7 +215,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
         /// <returns><see cref="Task"/></returns>
         protected async Task SaveChangesAsync(CancellationToken cancellationToken)
         {
-            base.ThrowIfDisposed();
+            this.ThrowIfDisposed();
             if (AutoSaveChanges)
             {
                 await Session.SaveChangesAsync(cancellationToken);
@@ -200,6 +286,54 @@ namespace Blun.AspNet.Identity.RavenDb.Store
                 return id as string;
             }
             return id.ToString(CultureInfo.InvariantCulture);
+        }
+
+        #endregion
+
+        #region IDisposable
+
+        protected virtual void Disposeable()
+        {
+            _session.Dispose();
+        }
+
+        protected Action HandleDisposable;
+        protected bool Disposed = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!Disposed)
+            {
+                if (disposing)
+                {
+                    try
+                    {
+                        HandleDisposable?.Invoke();
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
+                }
+                Disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~GenericStore()
+        {
+            Dispose(false);
+        }
+
+        protected void ThrowIfDisposed()
+        {
+            if (this.Disposed)
+                throw new ObjectDisposedException(this.GetType().Name);
         }
 
         #endregion

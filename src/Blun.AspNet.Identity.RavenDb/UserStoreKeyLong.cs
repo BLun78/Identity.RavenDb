@@ -3,7 +3,7 @@ using Blun.AspNet.Identity.RavenDb.Store;
 using Microsoft.AspNet.Identity;
 using Raven.Client;
 
-namespace Blun.AspNet.Identity.RavenDB
+namespace Blun.AspNet.Identity.RavenDb
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly")]
     public sealed class UserStoreKeyLong :

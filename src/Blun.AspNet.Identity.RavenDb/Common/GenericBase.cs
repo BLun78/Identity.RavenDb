@@ -4,13 +4,13 @@ using System.Runtime.CompilerServices;
 namespace Blun.AspNet.Identity.RavenDb.Common
 {
     public abstract class GenericBase<TKey> : IDisposable
-    //where TKey : IConvertible, IComparable, IEquatable<TKey>
+    where TKey : IConvertible, IComparable, IEquatable<TKey>
     {
 
         protected GenericBase()
         {
             //check für Valid Key
-            if (!(CheckInt() || CheckString()))
+            if (!(CheckNumeric() || CheckString()))
             {
                 ThrowTypeAccessException(typeof(TKey));
             }
@@ -18,17 +18,29 @@ namespace Blun.AspNet.Identity.RavenDb.Common
 
         protected static void ThrowTypeAccessException(Type type)
         {
-            throw new TypeAccessException("Only 'int' and 'string' are valid for RavenDB Id!", new TypeAccessException(type.FullName));
+            throw new NotSupportedException("Only 'int','long' and 'string' are valid for RavenDB Key!",
+                                            new TypeAccessException(type.FullName));
+        }
+
+        //TODO: Refactor Name
+        protected static bool CheckNumeric()
+        {
+            return CheckInt() || CheckLong();
         }
 
         protected static bool CheckInt()
         {
-            return typeof(TKey) == typeof(int);
+            return typeof (TKey) == typeof (int) || typeof (TKey) == typeof (Int32);
+        }
+
+        protected static bool CheckLong()
+        {
+            return typeof(TKey) == typeof(long) || typeof(TKey) == typeof(Int64);
         }
 
         protected static bool CheckString()
         {
-            return typeof(TKey) == typeof(string);
+            return typeof(TKey) == typeof(string) || typeof(TKey) == typeof(String);
         }
 
         protected void CheckArgumentForOnlyNull(object input, string argumentName, [CallerMemberName]string sourceMemberName = "")
@@ -44,11 +56,16 @@ namespace Blun.AspNet.Identity.RavenDb.Common
             if (input is string)
             {
                 if (string.IsNullOrWhiteSpace(input as string))
-                    throw new ArgumentNullException(argumentName, sourceMemberName);
+                    throw new ArgumentException("ValueCannotBeNullOrEmptyOrWhiteSpace - " + argumentName, sourceMemberName);
             }
             else if (input is int)
             {
                 if (Convert.ToInt32(input) == default(int))
+                    throw new ArgumentNullException(argumentName, sourceMemberName);
+            }
+            else if (input is long)
+            {
+                if (Convert.ToInt64(input) == default(long))
                     throw new ArgumentNullException(argumentName, sourceMemberName);
             }
             else
@@ -71,10 +88,7 @@ namespace Blun.AspNet.Identity.RavenDb.Common
                 {
                     try
                     {
-                        if (HandleDisposable != null)
-                        {
-                            HandleDisposable.Invoke();
-                        }
+                        HandleDisposable?.Invoke();
                     }
                     catch (Exception)
                     {

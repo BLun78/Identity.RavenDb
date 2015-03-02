@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Blun.AspNet.Identity.RavenDb.Common;
 using Microsoft.AspNet.Identity;
+using Microsoft.Framework.Logging;
 using Raven.Abstractions.Exceptions;
 using Raven.Client;
 using Raven.Client.Linq;
@@ -23,13 +24,13 @@ namespace Blun.AspNet.Identity.RavenDb.Store
     {
         #region CTOR
 
-        public RoleStore(Func<IAsyncDocumentSession> getSession, IdentityErrorDescriber describer = null)
-            : base(getSession, describer)
+        public RoleStore(ILogger logger, Func<IAsyncDocumentSession> getSession, IdentityErrorDescriber describer = null)
+            : base(logger, getSession, describer)
         {
         }
 
-        public RoleStore(IAsyncDocumentSession session, IdentityErrorDescriber describer = null)
-            : base(session, describer)
+        public RoleStore(ILogger logger, IAsyncDocumentSession session, IdentityErrorDescriber describer = null)
+            : base(logger, session, describer)
         {
         }
 

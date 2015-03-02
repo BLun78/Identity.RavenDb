@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
@@ -9,16 +9,15 @@ using System.Threading.Tasks;
 using Blun.AspNet.Identity.RavenDb.Common;
 using Blun.AspNet.Identity.RavenDB.Index;
 using Microsoft.AspNet.Identity;
-using Raven.Abstractions.Exceptions;
+using Microsoft.Framework.Logging;
 using Raven.Client;
-using Raven.Client.Exceptions;
 using Raven.Client.Linq;
 
 namespace Blun.AspNet.Identity.RavenDb.Store
 {
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly")]
-    public class UserStore<TUser, TRole, TKey> : 
+    [SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly")]
+    public class UserStore<TUser, TRole, TKey> :
                                         GenericStore<TKey>,
                                         IUserStore<TUser>,
                                         IUserLoginStore<TUser>,
@@ -37,14 +36,14 @@ namespace Blun.AspNet.Identity.RavenDb.Store
     {
         #region CTOR
 
-        protected UserStore(Func<IAsyncDocumentSession> getSession, IdentityErrorDescriber describer = null)
-            : base(getSession, describer)
+        protected UserStore(ILogger logger, Func<IAsyncDocumentSession> getSession, IdentityErrorDescriber describer = null)
+            : base(logger, getSession, describer)
         {
             IndexInstaller().Wait();
         }
 
-        protected UserStore(IAsyncDocumentSession session, IdentityErrorDescriber describer = null)
-            : base(session, describer)
+        protected UserStore(ILogger logger, IAsyncDocumentSession session, IdentityErrorDescriber describer = null)
+            : base(logger, session, describer)
         {
             IndexInstaller().Wait();
         }
@@ -312,12 +311,12 @@ namespace Blun.AspNet.Identity.RavenDb.Store
             if (CheckNumeric())
             {
                 if (userClaims != null)
-                    userIdAsString.AddRange(userClaims.Select(userid => base.CreateId(userid, typeof(TUser))));
+                    userIdAsString.AddRange(Enumerable.Select<TKey, string>(userClaims, userid => base.CreateId(userid, typeof(TUser))));
             }
             else if (CheckString())
             {
                 if (userClaims != null)
-                    userIdAsString.AddRange(userClaims.Select(userid => userid as string));
+                    userIdAsString.AddRange(Enumerable.Select<TKey, string>(userClaims, userid => userid as string));
             }
             else
             {
@@ -695,7 +694,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
                 var roleId = role.Id;
                 var iur = await IdentityUserRoles.Where(ur => ur.RoleId.Equals(roleId)).ToListAsync(cancellationToken);
 
-                return await this.Session.LoadAsync<TUser, TKey>(iur.Select(s => s.UserId), cancellationToken);
+                return await this.Session.LoadAsync<TUser, TKey>(Enumerable.Select<IdentityUserRole<TKey>, TKey>(iur, s => s.UserId), cancellationToken);
             }
             return new List<TUser>();
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using Blun.AspNet.Identity.RavenDb.Store;
 using Microsoft.AspNet.Identity;
+using Microsoft.Framework.Logging;
 using Raven.Client;
 
 namespace Blun.AspNet.Identity.RavenDb
@@ -9,13 +10,13 @@ namespace Blun.AspNet.Identity.RavenDb
     public sealed class UserStore :
                         UserStore<IdentityUser, IdentityRole, string>
     {
-        public UserStore(Func<IAsyncDocumentSession> getSession, IdentityErrorDescriber describer = null)
-            : base(getSession, describer)
+        public UserStore(ILogger logger, Func<IAsyncDocumentSession> getSession, IdentityErrorDescriber describer = null)
+            : base(logger, getSession, describer)
         {
         }
 
-        public UserStore(IAsyncDocumentSession session, IdentityErrorDescriber describer = null)
-            : base(session, describer)
+        public UserStore(ILogger logger, IAsyncDocumentSession session, IdentityErrorDescriber describer = null)
+            : base(logger, session, describer)
         {
         }
     }

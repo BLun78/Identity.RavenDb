@@ -1,11 +1,17 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Blun.AspNet.Identity.RavenDb.Logging;
 using Microsoft.AspNet.Identity;
+using Microsoft.Framework.Logging;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Fallback;
 using Raven.Client;
 using Raven.Client.Document.Async;
+using JetBrains.Annotations;
 
 namespace Blun.AspNet.Identity.RavenDb.Store
 {
@@ -13,6 +19,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
     /// /the base for the <see cref="UserStore"/> and <see cref="Rolestore"/>
     /// </summary>
     /// <typeparam name="TKey">only <see cref="string"/> or <see cref="int"/></typeparam>
+    [DebuggerDisplay("Session = {Session}")]
     public abstract class GenericStore<TKey> : IDisposable
         where TKey : IConvertible, IComparable, IEquatable<TKey>
     {
@@ -21,6 +28,23 @@ namespace Blun.AspNet.Identity.RavenDb.Store
         private readonly Func<IAsyncDocumentSession> _getSessionFunc;
         private IAsyncDocumentSession _session;
         private Func<string> _identityPartsSeparatorActor;
+
+        public ILogger Logger
+        {
+            get
+            {
+                if (_logger == null)
+                {
+                    _logger = NullLogger.Instance;
+                }
+                return _logger;
+            }
+            protected set
+            {
+                _logger = value;
+            }
+        }
+        private ILogger _logger;
 
         /// <summary>
         /// Used to generate public API error messages 
@@ -40,21 +64,30 @@ namespace Blun.AspNet.Identity.RavenDb.Store
         /// Use it if you have an open session
         /// </summary>
         /// <param name="describer">use to set an own <see cref="IdentityErrorDescriber"/></param>
-        private GenericStore(IdentityErrorDescriber describer)
+        /// <param name="logger"></param>
+        private GenericStore(ILogger logger, IdentityErrorDescriber describer)
         {
-            //check für Valid Key
-            if (!(CheckNumeric() || CheckString()))
-            {
-                ThrowNotSupportedException(typeof(TKey));
-            }
-            //IDisposable
-            HandleDisposable = Disposeable;
-            //autosave
-            AutoSaveChanges = true;
-            //IdentityErrorDescriber
-            ErrorDescriber = describer ?? IdentityErrorDescriber.Default;
+            Logger = logger;
+            var _LoggerStructure = new LoggerStructureFormat("This ist a log {0}", 1);
+            var t = _LoggerStructure.GetValues();
 
-            //_session.Advanced.DocumentStore.Conventions.RegisterIdConvention<TUser>((dbname, commands, user) => user.KeyPrefix + this.GetIdentityPartsSeparator() + user.Id);
+            using (Logger.BeginScope("CTOR"))
+            {
+                Logger.WriteVerbose(2222, _LoggerStructure);
+                //check für Valid Key
+                if (!(CheckNumeric() || CheckString()))
+                {
+                    ThrowNotSupportedException(typeof(TKey));
+                }
+                //IDisposable
+                HandleDisposable = Disposeable;
+                //autosave
+                AutoSaveChanges = true;
+                //IdentityErrorDescriber
+                ErrorDescriber = describer ?? IdentityErrorDescriber.Default;
+
+                Logger.WriteVerbose(2222, _LoggerStructure);
+            }
         }
 
 
@@ -63,8 +96,8 @@ namespace Blun.AspNet.Identity.RavenDb.Store
         /// </summary>
         /// <param name="getSession">delegate for <see cref="AsyncDocumentSession"/></param>
         /// <param name="describer">use to set an own <see cref="IdentityErrorDescriber"/></param>
-        protected GenericStore(Func<IAsyncDocumentSession> getSession, IdentityErrorDescriber describer = null)
-            : this(describer)
+        protected GenericStore(ILogger logger, [NotNull] Func<IAsyncDocumentSession> getSession, IdentityErrorDescriber describer = null)
+            : this(logger, describer)
         {
             this.CheckArgumentForNull(getSession, "getSession");
 
@@ -76,15 +109,15 @@ namespace Blun.AspNet.Identity.RavenDb.Store
         /// </summary>
         /// <param name="session">set a <see cref="AsyncDocumentSession"/></param>
         /// <param name="describer">use to set an own <see cref="IdentityErrorDescriber"/></param>
-        protected GenericStore(IAsyncDocumentSession session, IdentityErrorDescriber describer = null)
-            : this(describer)
+        protected GenericStore(ILogger logger, [NotNull] IAsyncDocumentSession session, IdentityErrorDescriber describer = null)
+            : this(logger, describer)
         {
             this.CheckArgumentForNull(session, "session");
             this._session = session;
         }
 
         #endregion
-        
+
         #region Methods/Functions
 
         /// <summary>
@@ -172,7 +205,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
                     throw new ArgumentNullException(argumentName, sourceMemberName);
             }
         }
-        
+
 
         /// <summary>
         /// Default  void Task
@@ -208,7 +241,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
             }
             return Session.Advanced.DocumentStore.Conventions.FindFullDocumentKeyFromNonStringIdentifier(id, type, false);
         }
-        
+
         /// <summary>
         /// Saves changes if <see cref="AutoSaveChanges"/> is 'true'
         /// </summary>
@@ -265,7 +298,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
                 return _session;
             }
         }
-        
+
         public virtual TKey ConvertIdFromString(string id)
         {
             if (id == null)

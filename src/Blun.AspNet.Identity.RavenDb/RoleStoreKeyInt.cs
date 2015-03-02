@@ -1,6 +1,7 @@
 using System;
 using Blun.AspNet.Identity.RavenDb.Store;
 using Microsoft.AspNet.Identity;
+using Microsoft.Framework.Logging;
 using Raven.Client;
 
 namespace Blun.AspNet.Identity.RavenDb
@@ -9,11 +10,11 @@ namespace Blun.AspNet.Identity.RavenDb
     public sealed class RoleStoreKeyInt :
                         RoleStore<IdentityRole<int>, int>
     {
-        public RoleStoreKeyInt(Func<IAsyncDocumentSession> getSession, IdentityErrorDescriber describer = null) : base(getSession, describer)
+        public RoleStoreKeyInt(ILogger logger, Func<IAsyncDocumentSession> getSession, IdentityErrorDescriber describer = null) : base(logger, getSession, describer)
         {
         }
 
-        public RoleStoreKeyInt(IAsyncDocumentSession session, IdentityErrorDescriber describer = null) : base(session, describer)
+        public RoleStoreKeyInt(ILogger logger, IAsyncDocumentSession session, IdentityErrorDescriber describer = null) : base(logger, session, describer)
         {
         }
     }

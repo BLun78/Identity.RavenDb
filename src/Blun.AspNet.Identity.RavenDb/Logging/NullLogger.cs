@@ -13,7 +13,7 @@ namespace Blun.AspNet.Identity.RavenDb.Logging
             return NullDisposable.Instance;
         }
 
-        public void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
         }
 

@@ -2,18 +2,19 @@
     "version": "1.0.0-*",
     "dependencies": {
         "xunit.runner.kre": "1.0.0-beta4-1188",
-        "Microsoft.AspNet.Identity": "3.0.0-beta4-11802",
+        "Microsoft.AspNet.Identity": "3.0.0-beta4-11847",
         "RavenDB.Client": "3.0.3515-Unstable",
         "RavenDB.Database": "3.0.3515-Unstable",
         "Moq": "4.2.1502.911",
-        "Microsoft.Framework.DependencyInjection": "1.0.0-beta4-10948",
-        "Microsoft.Framework.ConfigurationModel": "1.0.0-beta4-10900",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-beta4-10970",
+        "Microsoft.Framework.ConfigurationModel": "1.0.0-beta4-10935",
         "Microsoft.Framework.Logging": "1.0.0-beta4-10912",
-        "Microsoft.Framework.OptionsModel": "1.0.0-beta4-10917",
-        "Microsoft.Framework.Logging.Serilog": "1.0.0-beta4-10930",
-        "Microsoft.Framework.DependencyInjection.Ninject": "1.0.0-beta4-10948",
-        "Microsoft.AspNet.Testing": "1.0.0-beta4-10954",
-        "Serilog": "1.4.196"
+        "Microsoft.Framework.OptionsModel": "1.0.0-beta4-10944",
+        "Microsoft.Framework.Logging.Serilog": "1.0.0-beta4-10951",
+        "Microsoft.Framework.DependencyInjection.Ninject": "1.0.0-beta4-10970",
+        "Microsoft.AspNet.Testing": "1.0.0-beta4-10976",
+        "Serilog": "1.4.196",
+        "System.Linq.Expressions": "4.0.10-beta-22704"
     },
 
     "frameworks": {

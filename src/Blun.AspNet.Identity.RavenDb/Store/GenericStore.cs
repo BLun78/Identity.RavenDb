@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Blun.AspNet.Identity.RavenDb.Logging;
 using Microsoft.AspNet.Identity;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Logging.Internal;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Raven.Client;
 using Raven.Client.Document.Async;
 using JetBrains.Annotations;
@@ -54,7 +54,18 @@ namespace Blun.AspNet.Identity.RavenDb.Store
         /// <summary>
         /// If it is 'true' it would automated save the RavenDb, otherwise the developer had to manuel to do
         /// </summary>
-        public bool AutoSaveChanges { get; set; }
+        public bool AutoSaveChanges
+        {
+            get
+            {
+                return _autoSaveChanges;
+            }
+            set
+            {
+                Logger.LogVerbose(LoggerId.GenericStoreAutoSaveChanges, "{0}.{1} is set to {2}", this.GetType().FullName, @"AutoSaveChanges", value);
+                _autoSaveChanges = value;
+            }
+        }
 
         #endregion
 
@@ -68,12 +79,11 @@ namespace Blun.AspNet.Identity.RavenDb.Store
         private GenericStore(ILogger logger, IdentityErrorDescriber describer)
         {
             Logger = logger;
-            var _LoggerStructure = new LoggerStructureFormat("This ist a log {0}", 1);
-            var t = _LoggerStructure.GetValues();
-
+            Logger.LogVerbose(0, LoggerStructure.CtorCreate(this.GetType().FullName));
+            
             using (Logger.BeginScope("CTOR"))
             {
-                Logger.WriteVerbose(2222, _LoggerStructure);
+
                 //check für Valid Key
                 if (!(CheckNumeric() || CheckString()))
                 {
@@ -86,7 +96,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
                 //IdentityErrorDescriber
                 ErrorDescriber = describer ?? IdentityErrorDescriber.Default;
 
-                Logger.WriteVerbose(2222, _LoggerStructure);
+                Logger.LogVerbose(2222, "");
             }
         }
 
@@ -332,6 +342,7 @@ namespace Blun.AspNet.Identity.RavenDb.Store
 
         protected Action HandleDisposable;
         protected bool Disposed = false;
+        private bool _autoSaveChanges;
 
         protected virtual void Dispose(bool disposing)
         {

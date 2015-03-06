@@ -11,7 +11,7 @@ namespace Blun.AspNet.Identity.RavenDb
     //http://blogs.msdn.com/b/webdev/archive/2014/06/17/dependency-injection-in-asp-net-vnext.aspx
     internal static class IdentityRavenDbServices
     {
-        public static IEnumerable<IServiceDescriptor> GetDefaultServices(Type userType = null,
+        public static IEnumerable<ServiceDescriptor> GetDefaultServices(Type userType = null,
                                                                            Type roleType = null,
                                                                            Type keyType = null,
                                                                            IConfiguration config = null)
@@ -58,7 +58,7 @@ namespace Blun.AspNet.Identity.RavenDb
             yield return describe.Scoped(typeof(IRoleStore<>).MakeGenericType(roleType), roleStoreType);
         }
 
-        public static IEnumerable<IServiceDescriptor> GetStringBasedKeyServices(IConfiguration config = null)
+        public static IEnumerable<ServiceDescriptor> GetStringBasedKeyServices(IConfiguration config = null)
         {
             return GetDefaultServices(null, null, null, config);
         }

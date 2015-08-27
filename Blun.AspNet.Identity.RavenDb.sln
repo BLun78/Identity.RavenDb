@@ -1,18 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22512.0
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3B1A7C4F-3EDE-446E-BC60-36CB1228A927}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Blun.AspNet.Identity.RavenDb", "src\Blun.AspNet.Identity.RavenDb\Blun.AspNet.Identity.RavenDb.kproj", "{DDA86F4C-441C-40B7-BB87-6BB50C05B3C9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Blun.AspNet.Identity.RavenDb", "src\Blun.AspNet.Identity.RavenDb\Blun.AspNet.Identity.RavenDb.xproj", "{DDA86F4C-441C-40B7-BB87-6BB50C05B3C9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E2E4497C-0E2A-442B-A5E5-6960E74013E8}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Blun.AspNet.Identity.RavenDb.Test", "src\Blun.AspNet.Identity.RavenDb.Test\Blun.AspNet.Identity.RavenDb.Test.kproj", "{78CC26E2-B79F-4C71-81C8-18E70BB53948}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Blun.AspNet.Identity.RavenDb.Test", "src\Blun.AspNet.Identity.RavenDb.Test\Blun.AspNet.Identity.RavenDb.Test.xproj", "{78CC26E2-B79F-4C71-81C8-18E70BB53948}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
